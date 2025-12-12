@@ -1,0 +1,148 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns true if the user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Returns true if the authenticated user's UID matches the provided userId.
+     * This is the foundation of the user-ownership model.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Returns true if the user is an owner and the document already exists.
+     * Used for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && exists(resource.data);
+    }
+
+    /**
+     * Returns true if the user has an admin role.
+     * Checks for the existence of a document in the roles_admin collection.
+     */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * Returns true if the user is a participant (admin or freelancer) in a contract.
+     */
+    function isContractParticipant(contractData) {
+      return isSignedIn() && (request.auth.uid == contractData.adminId || request.auth.uid == contractData.freelancerId);
+    }
+    
+    /**
+     * Returns true if the user is the designated admin of a contract.
+     */
+    function isContractAdmin(contractData) {
+      return isSignedIn() && request.auth.uid == contractData.adminId;
+    }
+
+    // ------------------------------------------------------------------------
+    // User Data Collections
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to a user's primary document.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own user document.
+     * @deny (get) An authenticated user trying to read another user's document.
+     * @principle Restricts access to a user's own data tree and enforces self-creation.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to a user's sensitive freelancer profile.
+     * @path /users/{userId}/freelancerProfiles/{freelancerProfileId}
+     * @allow (update) The document owner updating their own profile.
+     * @deny (list) A non-owner attempting to list profiles, even if they know the user ID.
+     * @principle Enforces strict ownership over sensitive, nested user data.
+     */
+    match /users/{userId}/freelancerProfiles/{freelancerProfileId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to a user's driver license information.
+     * @path /users/{userId}/driverLicenses/{driverLicenseId}
+     * @allow (get) An admin reading a user's driver license for verification.
+     * @deny (create) A user trying to create a driver license document for another user.
+     * @principle Enforces strict ownership over sensitive, nested user data.
+     */
+    match /users/{userId}/driverLicenses/{driverLicenseId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to a user's professional certificates.
+     * @path /users/{userId}/certificates/{certificateId}
+     * @allow (delete) The user deleting one of their own certificates.
+     * @deny (get) Any unauthenticated access attempt.
+     * @principle Enforces strict ownership over sensitive, nested user data.
+     */
+    match /users/{userId}/certificates/{certificateId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // ------------------------------------------------------------------------
+    // Shared & Role-Based Collections
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to contracts shared between an admin and a freelancer.
+     * @path /contracts/{contractId}
+     * @allow (get) The freelancer assigned to the contract reading its details.
+     * @deny (list) A user trying to list all contracts without filtering by their own ID.
+     * @principle Implements a "shared document" model and enforces secure querying for list operations.
+     */
+    match /contracts/{contractId} {
+      allow get: if isContractParticipant(resource.data) || isAdmin();
+      allow list: if isAdmin() || (isSignedIn() && (request.query.adminId == request.auth.uid || request.query.freelancerId == request.auth.uid));
+      allow create: if isAdmin();
+      allow update: if (isContractParticipant(resource.data) || isAdmin());
+      allow delete: if isContractAdmin(resource.data);
+    }
+    
+    /**
+     * @description Manages admin role assignments. This collection is read-only from the client to prevent privilege escalation.
+     * @path /roles_admin/{userId}
+     * @allow (get) An admin checking if another user is also an admin.
+     * @deny (create) Any user (including an admin) trying to create a new admin role document via the client SDK.
+     * @principle Prevents client-side privilege escalation. Roles should only be managed by a trusted server environment.
+     */
+    match /roles_admin/{userId} {
+      allow get, list: if isAdmin();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+  }
+}

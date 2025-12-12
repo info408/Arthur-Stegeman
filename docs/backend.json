@@ -1,0 +1,306 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user account within the MoveLegally application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "role": {
+          "type": "string",
+          "description": "User's role within the system (e.g., Admin, Freelancer).",
+          "format": "string"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "role"
+      ]
+    },
+    "FreelancerProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FreelancerProfile",
+      "type": "object",
+      "description": "Stores additional profile information for Freelancer users.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FreelancerProfile entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 FreelancerProfile)"
+        },
+        "kvkNumber": {
+          "type": "string",
+          "description": "Freelancer's Kamer van Koophandel (KvK) number."
+        },
+        "insuranceDetails": {
+          "type": "string",
+          "description": "Details about the freelancer's insurance coverage."
+        },
+        "driverLicenseId": {
+          "type": "string",
+          "description": "Reference to the DriverLicense entity."
+        },
+        "certificateIds": {
+          "type": "array",
+          "description": "References to Certificate entities. (Relationship: FreelancerProfile 1:N Certificate)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "kvkNumber",
+        "insuranceDetails"
+      ]
+    },
+    "DriverLicense": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DriverLicense",
+      "type": "object",
+      "description": "Stores the driver's license information",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the driver's license"
+        },
+        "licenseNumber": {
+          "type": "string",
+          "description": "License number of the driver."
+        },
+        "issueDate": {
+          "type": "string",
+          "description": "Date when the license was issued.",
+          "format": "date-time"
+        },
+        "expirationDate": {
+          "type": "string",
+          "description": "Date when the license expires.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "licenseNumber",
+        "issueDate",
+        "expirationDate"
+      ]
+    },
+    "Certificate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Certificate",
+      "type": "object",
+      "description": "Represents a certificate held by a freelancer (e.g., VCA, Verhuisliftoperator).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the certificate entity."
+        },
+        "certificateName": {
+          "type": "string",
+          "description": "Name of the certificate (e.g., VCA Basis)."
+        },
+        "issuingOrganization": {
+          "type": "string",
+          "description": "Organization that issued the certificate."
+        },
+        "expirationDate": {
+          "type": "string",
+          "description": "Date when the certificate expires.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "certificateName",
+        "issuingOrganization"
+      ]
+    },
+    "Contract": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Contract",
+      "type": "object",
+      "description": "Represents a contract generated and managed within the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contract entity."
+        },
+        "adminId": {
+          "type": "string",
+          "description": "Reference to User (Admin). (Relationship: User 1:N Contract)"
+        },
+        "freelancerId": {
+          "type": "string",
+          "description": "Reference to User (Freelancer). (Relationship: User 1:N Contract)"
+        },
+        "contractDetails": {
+          "type": "string",
+          "description": "The contract details"
+        },
+        "contractStatus": {
+          "type": "string",
+          "description": "Status of the contract (e.g., Draft, Sent, Signed)."
+        },
+        "eSignatureId": {
+          "type": "string",
+          "description": "Identifier for the electronic signature associated with this contract."
+        },
+        "serviceLevel": {
+          "type": "string",
+          "description": "Service level agreed upon in the contract. Correlates to service levels."
+        }
+      },
+      "required": [
+        "id",
+        "adminId",
+        "freelancerId",
+        "contractDetails",
+        "contractStatus"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user account information. Path-based ownership ensures only the user can access their data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/freelancerProfiles/{freelancerProfileId}",
+        "definition": {
+          "entityName": "FreelancerProfile",
+          "schema": {
+            "$ref": "#/backend/entities/FreelancerProfile"
+          },
+          "description": "Stores freelancer profile information, linked to a user.  Includes denormalized 'userId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "freelancerProfileId",
+              "description": "The unique identifier for the freelancer profile."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/driverLicenses/{driverLicenseId}",
+        "definition": {
+          "entityName": "DriverLicense",
+          "schema": {
+            "$ref": "#/backend/entities/DriverLicense"
+          },
+          "description": "Stores driver's license information for a specific user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "driverLicenseId",
+              "description": "The unique identifier for the driver's license."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/certificates/{certificateId}",
+        "definition": {
+          "entityName": "Certificate",
+          "schema": {
+            "$ref": "#/backend/entities/Certificate"
+          },
+          "description": "Stores certificates for a specific user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "certificateId",
+              "description": "The unique identifier for the certificate."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/contracts/{contractId}",
+        "definition": {
+          "entityName": "Contract",
+          "schema": {
+            "$ref": "#/backend/entities/Contract"
+          },
+          "description": "Stores contract information. Includes denormalized 'adminId' and 'freelancerId' for authorization independence.",
+          "params": [
+            {
+              "name": "contractId",
+              "description": "The unique identifier for the contract."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "admin",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Documents in this collection grant admin privileges to the user. Existence determines role.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure prioritizes security and scalability for MoveLegally, especially concerning sensitive user data like ID, driver's license, and certificates. It enforces Authorization Independence to allow atomic operations and straightforward security rules.  The structure is segregated by function and access levels, improving debuggability and security rule simplicity.\n\n**Authorization Independence:**  Critical for secure operations. For example, freelancer profiles include the `userId` so the profile document does not need to 'get()' the user document. Contracts also denormalize `adminId` and `freelancerId` eliminating authorization `get()` calls.\n\n**QAPs (Rules are not Filters):** The structure enables secure list operations.\n*   User data is stored under `/users/{userId}`, allowing listing only with the user's ID.\n*   Admin data is stored under `/roles_admin/{userId}`. The presence of a document in this collection determines admin privileges. \n\n**User Data Segregation:**\n*   Private user data and freelancer profiles are stored under `/users/{userId}`. This isolates access to authorized users only.\n*   Driver's licenses and certificates are further nested for granular access control."
+  }
+}
