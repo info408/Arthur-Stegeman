@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Logo from '@/components/logo';
-import { ArrowRight, UserCheck, ShieldCheck } from 'lucide-react';
+import { ArrowRight, UserCheck, ShieldCheck, LogIn } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -19,6 +19,16 @@ export default function Home() {
           Your Partner in Legally Sound Transport Agreements. Draft, analyze, and sign contracts with confidence.
         </p>
 
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+           <Button asChild>
+                <Link href="/admin-login">Admin Login <LogIn className="ml-2 h-4 w-4" /></Link>
+            </Button>
+            <Button asChild variant="secondary">
+                <Link href="/login">Freelancer Login <LogIn className="ml-2 h-4 w-4" /></Link>
+            </Button>
+        </div>
+
+
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full mb-12">
           <Card className="shadow-lg hover:shadow-xl transition-shadow text-left">
             <CardHeader>
@@ -33,13 +43,8 @@ export default function Home() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="mb-6">Use our AI-powered tool to draft legally compliant contracts under Dutch law and streamline your onboarding process.</p>
+              <p>Use our AI-powered tool to draft legally compliant contracts under Dutch law and streamline your onboarding process.</p>
             </CardContent>
-            <CardFooter>
-              <Button asChild className="w-full">
-                <Link href="/admin">Go to Admin Portal <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </CardFooter>
           </Card>
 
           <Card className="shadow-lg hover:shadow-xl transition-shadow text-left">
@@ -55,13 +60,8 @@ export default function Home() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="mb-6">Access your dedicated portal to review contracts, manage compliance documents, and execute agreements digitally.</p>
+              <p>Access your dedicated portal to review contracts, manage compliance documents, and execute agreements digitally.</p>
             </CardContent>
-            <CardFooter>
-              <Button asChild variant="secondary" className="w-full">
-                <Link href="/freelancer/demo-contract-123">View Demo Portal <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </main>
