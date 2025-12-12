@@ -35,10 +35,11 @@ const formSchema = z.object({
 type AuthFormProps = {
   isSignUp?: boolean;
   isAdmin?: boolean;
+  isAdminOnly?: boolean;
 };
 
 const GoogleIcon = () => (
-    <svg className="h-5 w-5" viewBox="0 0 24 24">
+    <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
         fill="#4285F4"
@@ -58,7 +59,7 @@ const GoogleIcon = () => (
     </svg>
   );
 
-export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
+export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = false }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const auth = useAuth();
@@ -77,6 +78,18 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
   const handleAuthSuccess = (userCredential: any) => {
     const user = userCredential.user;
     if (user) {
+        if (isAdmin || isAdminOnly) {
+            if (user.email !== 'info@kingkongmovers.nl') {
+                toast({
+                    variant: 'destructive',
+                    title: 'Access Denied',
+                    description: 'This email is not authorized for admin access.',
+                });
+                auth.signOut();
+                return;
+            }
+        }
+
         // This is a simplified user/role creation for demo purposes
         // In a real app, you'd have more robust user profile creation and role management
         const userDocRef = doc(firestore, "users", user.uid);
@@ -85,19 +98,20 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
         setDoc(userDocRef, {
             id: user.uid,
             email: user.email,
-            role: isAdmin ? 'Admin' : 'Freelancer',
+            role: (isAdmin || isAdminOnly) ? 'Admin' : 'Freelancer',
             firstName: user.displayName?.split(' ')[0] || '',
             lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
         }, { merge: true }).then(() => {
-            if (isAdmin) {
+            if (isAdmin || isAdminOnly) {
                 // If it's an admin, add them to the admin roles collection
                 const adminRoleRef = doc(firestore, "roles_admin", user.uid);
                 setDoc(adminRoleRef, { userId: user.uid });
             }
         }).catch(err => console.error("Error setting user document:", err));
+
+        toast({ title: isSignUp ? 'Account created!' : 'Signed in successfully!', description: "You've been logged in." });
+        router.push((isAdmin || isAdminOnly) ? '/admin' : '/freelancer/demo-contract-123');
     }
-    toast({ title: isSignUp ? 'Account created!' : 'Signed in successfully!', description: "You've been logged in." });
-    router.push(isAdmin ? '/admin' : '/freelancer/demo-contract-123');
 };
 
   const handleAuthError = (error: any) => {
@@ -134,10 +148,11 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
     }
   }
 
-  const title = isSignUp ? (isAdmin ? 'Admin Sign Up' : 'Create an Account') : (isAdmin ? 'Admin Login' : 'Freelancer Login');
-  const description = isSignUp ? 'Enter your email and password to create an account.' : 'Enter your credentials to access your portal.';
+  const effectiveAdmin = isAdmin || isAdminOnly;
+  const title = isAdminOnly ? 'Admin Login' : (isSignUp ? 'Create an Account' : 'Freelancer Login');
+  const description = isAdminOnly ? 'Log in with your administrator Google account.' : (isSignUp ? 'Enter your email and password to create an account.' : 'Enter your credentials to access your portal.');
   const buttonText = isSignUp ? 'Sign Up' : 'Login';
-  const footerLink = isSignUp ? (isAdmin ? '/admin-login' : '/login') : (isAdmin ? '/signup' : '/signup');
+  const footerLink = isSignUp ? '/login' : '/signup';
   const footerText = isSignUp ? 'Already have an account?' : "Don't have an account?";
   const footerLinkText = isSignUp ? 'Login' : 'Sign Up';
 
@@ -152,52 +167,57 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
               
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="name@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              
-              <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
-                {isLoading ? <Loader className="animate-spin" /> : <LogIn className="mr-2"/>}
-                {buttonText}
-              </Button>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
+                {!isAdminOnly && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="name@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  
+                    <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+                      {isLoading ? <Loader className="animate-spin" /> : <LogIn className="mr-2"/>}
+                      {buttonText}
+                    </Button>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
               <Button variant="outline" type="button" className="w-full" onClick={onGoogleSignIn} disabled={isLoading || isGoogleLoading}>
                 {isGoogleLoading ? <Loader className="animate-spin" /> : <GoogleIcon />}
                 Sign in with Google
               </Button>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-               {!isAdmin && (
+               {!effectiveAdmin && (
                 <p className="text-sm text-muted-foreground">
                     {footerText}{' '}
                     <Button variant="link" asChild className="p-0">
