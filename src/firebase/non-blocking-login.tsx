@@ -8,6 +8,7 @@ import {
   signInWithPopup,
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
+import { firebaseConfig } from './config';
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -33,6 +34,11 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
 /** Initiate Google sign-in (non-blocking). */
 export function initiateGoogleSignIn(authInstance: Auth): Promise<any> {
   const provider = new GoogleAuthProvider();
+  // By explicitly setting the authDomain here, we ensure the popup redirect
+  // uses the correct domain, even in complex hosting environments.
+  provider.setCustomParameters({
+    authDomain: firebaseConfig.authDomain
+  });
   // CRITICAL: Call signInWithPopup directly. Do NOT use 'await signInWithPopup(...)'.
   return signInWithPopup(authInstance, provider);
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
