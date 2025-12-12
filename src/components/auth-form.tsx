@@ -157,8 +157,8 @@ export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = fals
   const footerLinkText = isSignUp ? 'Login' : 'Sign Up';
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-sm border-0 shadow-none sm:border sm:shadow-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-headline">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
@@ -205,7 +205,7 @@ export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = fals
                         <span className="w-full border-t" />
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                        <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                       </div>
                     </div>
                   </>
