@@ -92,7 +92,7 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
             if (isAdmin) {
                 // If it's an admin, add them to the admin roles collection
                 const adminRoleRef = doc(firestore, "roles_admin", user.uid);
-                return setDoc(adminRoleRef, { userId: user.uid });
+                setDoc(adminRoleRef, { userId: user.uid });
             }
         }).catch(err => console.error("Error setting user document:", err));
     }
@@ -151,7 +151,7 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              
                 <FormField
                   control={form.control}
                   name="email"
@@ -178,7 +178,7 @@ export function AuthForm({ isSignUp = false, isAdmin = false }: AuthFormProps) {
                     </FormItem>
                   )}
                 />
-              </div>
+              
               <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
                 {isLoading ? <Loader className="animate-spin" /> : <LogIn className="mr-2"/>}
                 {buttonText}
