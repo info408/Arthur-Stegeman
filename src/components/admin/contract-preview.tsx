@@ -7,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import type { LegalAnalysis } from '@/lib/types';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Download, Print, FileText, AlertTriangle, BadgeInfo, ChevronsRight } from 'lucide-react';
+import { Download, Printer, FileText, AlertTriangle, BadgeInfo, ChevronsRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 
 interface ContractPreviewProps {
@@ -169,7 +169,7 @@ export default function ContractPreview({ legalAnalysis, draftContract, isLoadin
         </Tabs>
       </CardContent>
       <CardFooter className="flex justify-end gap-2 no-print">
-        <Button variant="outline" onClick={handlePrint} disabled={!draftContract}><Print className="mr-2 h-4 w-4" /> Print / PDF</Button>
+        <Button variant="outline" onClick={handlePrint} disabled={!draftContract}><Printer className="mr-2 h-4 w-4" /> Print / PDF</Button>
         <Button onClick={handleDownload} disabled={!draftContract}><Download className="mr-2 h-4 w-4" /> Download .doc</Button>
       </CardFooter>
     </Card>
