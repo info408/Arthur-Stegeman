@@ -6,6 +6,9 @@
 location: europe-west4
 
 runConfig:
+  # Sets the minimum number of instances to run.
+  # Use 0 for development to reduce costs.
+  minInstances: 0
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
-  maxInstances: 1
+  maxInstances: 2
