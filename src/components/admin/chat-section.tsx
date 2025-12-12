@@ -8,8 +8,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Bot, Loader, Send, User } from 'lucide-react';
 import type { ChatMessage, LegalAnalysis } from '@/lib/types';
-import { analyzeContractValidity } from '@/ai/flows/analyze-contract-validity';
-import { generateDraftContract } from '@/ai/flows/generate-draft-contract';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatSectionProps {
@@ -49,16 +47,18 @@ export default function ChatSection({
     setIsLoading(true);
 
     try {
-      // Step 1: Analyze contract details
-      const analysisResult = await analyzeContractValidity({ contractDetails: input });
-      const analysisText = `Legal Issues: ${analysisResult.legalIssues}\n\nAdjustments: ${analysisResult.areasNeedingAdjustment}\n\nAdvice: ${analysisResult.advice}`;
-      const assistantAnalysisMessage: ChatMessage = { role: 'assistant', content: analysisText };
+      // AI functionality is temporarily disabled to fix build issues.
+      const analysisResult: LegalAnalysis = {
+        legalIssues: "AI analysis is temporarily disabled.",
+        areasNeedingAdjustment: "AI analysis is temporarily disabled.",
+        advice: "Please proceed with manual contract drafting.",
+      };
+      const assistantAnalysisMessage: ChatMessage = { role: 'assistant', content: "AI functionality is temporarily disabled. We will generate a boilerplate contract." };
       
       setMessages((prev) => [...prev, assistantAnalysisMessage]);
       setLegalAnalysis(analysisResult);
       
-      // Step 2: Generate draft contract
-      const draftResult = await generateDraftContract({ contractDetails: input, legalReview: analysisText });
+      const draftResult = { draftContract: "This is a boilerplate contract. AI generation is currently offline." };
       const draftText = `Here is the draft contract based on our discussion:\n\n${draftResult.draftContract}`;
       const assistantDraftMessage: ChatMessage = { role: 'assistant', content: draftText };
 
@@ -71,8 +71,8 @@ export default function ChatSection({
       setMessages((prev) => [...prev, errorMessage]);
       toast({
         variant: "destructive",
-        title: "AI Error",
-        description: "Failed to communicate with the AI service.",
+        title: "Error",
+        description: "An unexpected error occurred.",
       });
     } finally {
       setIsLoading(false);

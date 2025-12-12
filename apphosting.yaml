@@ -3,7 +3,7 @@
 
 # Specifies the location to run the backend in.
 # https://firebase.google.com/docs/app-hosting/locations
-location: europe-west4
+location: us-central1
 
 runConfig:
   # Sets the minimum number of instances to run.

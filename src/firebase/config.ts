@@ -4,8 +4,8 @@ export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "gebr-stegeman-contracts.firebaseapp.com",
   projectId: "gebr-stegeman-contracts",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  storageBucket: "gebr-stegeman-contracts.appspot.com",
+  messagingSenderId: "141566612300",
+  appId: "1:141566612300:web:d6de8054acd93ad348f5e9",
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
