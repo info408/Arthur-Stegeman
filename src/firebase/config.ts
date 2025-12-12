@@ -2,7 +2,7 @@
 // To switch to a different Firebase project, use the 'UpdateFirebaseProjectTool' in the Studio.
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: "gebrstegemanmovelegally--gebr-stegeman-contracts.europe-west4.hosted.app",
+  authDomain: "gebr-stegeman-contracts.firebaseapp.com",
   projectId: "gebr-stegeman-contracts",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
