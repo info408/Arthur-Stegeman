@@ -34,7 +34,6 @@ const formSchema = z.object({
 
 type AuthFormProps = {
   isSignUp?: boolean;
-  isAdmin?: boolean;
   isAdminOnly?: boolean;
 };
 
@@ -59,7 +58,7 @@ const GoogleIcon = () => (
     </svg>
   );
 
-export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = false }: AuthFormProps) {
+export function AuthForm({ isSignUp = false, isAdminOnly = false }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const auth = useAuth();
@@ -78,48 +77,55 @@ export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = fals
   const handleAuthSuccess = (userCredential: any) => {
     const user = userCredential.user;
     if (user) {
-        if (isAdmin || isAdminOnly) {
-            if (user.email !== 'info@kingkongmovers.nl') {
-                toast({
-                    variant: 'destructive',
-                    title: 'Access Denied',
-                    description: 'This email is not authorized for admin access.',
-                });
-                auth.signOut();
-                return;
-            }
+        const isAdmin = isAdminOnly || user.email === 'info@kingkongmovers.nl';
+
+        if (isAdminOnly && !isAdmin) {
+             toast({
+                variant: 'destructive',
+                title: 'Access Denied',
+                description: 'This account is not authorized for admin access.',
+            });
+            auth.signOut(); // Sign out the user immediately
+            return;
         }
 
-        // This is a simplified user/role creation for demo purposes
-        // In a real app, you'd have more robust user profile creation and role management
         const userDocRef = doc(firestore, "users", user.uid);
         
-        // Use setDoc with merge:true to create or update user data
         setDoc(userDocRef, {
             id: user.uid,
             email: user.email,
-            role: (isAdmin || isAdminOnly) ? 'Admin' : 'Freelancer',
+            role: isAdmin ? 'Admin' : 'Freelancer',
             firstName: user.displayName?.split(' ')[0] || '',
             lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
         }, { merge: true }).then(() => {
-            if (isAdmin || isAdminOnly) {
-                // If it's an admin, add them to the admin roles collection
+            if (isAdmin) {
                 const adminRoleRef = doc(firestore, "roles_admin", user.uid);
                 setDoc(adminRoleRef, { userId: user.uid });
             }
         }).catch(err => console.error("Error setting user document:", err));
 
         toast({ title: isSignUp ? 'Account created!' : 'Signed in successfully!', description: "You've been logged in." });
-        router.push((isAdmin || isAdminOnly) ? '/admin' : '/freelancer/demo-contract-123');
+        
+        if (isAdmin) {
+            router.push('/admin');
+        } else {
+            router.push('/freelancer/demo-contract-123');
+        }
     }
 };
 
   const handleAuthError = (error: any) => {
     console.error(error);
+    let description = 'An unexpected error occurred.';
+    if (error.code === 'auth/unauthorized-domain') {
+        description = "This app's domain is not authorized for authentication. Please add it in the Firebase console."
+    } else if (error.code) {
+        description = error.message;
+    }
     toast({
       variant: 'destructive',
       title: 'Authentication Error',
-      description: error.message || 'An unexpected error occurred.',
+      description: description,
     });
   };
 
@@ -148,7 +154,6 @@ export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = fals
     }
   }
 
-  const effectiveAdmin = isAdmin || isAdminOnly;
   const title = isAdminOnly ? 'Admin Login' : (isSignUp ? 'Create an Account' : 'Freelancer Login');
   const description = isAdminOnly ? 'Log in with your administrator Google account.' : (isSignUp ? 'Enter your email and password to create an account.' : 'Enter your credentials to access your portal.');
   const buttonText = isSignUp ? 'Sign Up' : 'Login';
@@ -217,7 +222,7 @@ export function AuthForm({ isSignUp = false, isAdmin = false, isAdminOnly = fals
               </Button>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-               {!effectiveAdmin && (
+               {!isAdminOnly && (
                 <p className="text-sm text-muted-foreground">
                     {footerText}{' '}
                     <Button variant="link" asChild className="p-0">
