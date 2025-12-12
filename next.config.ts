@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Adding location here to attempt to force the build region
+  env: {
+    FIREBASE_APP_HOSTING_REGION: 'europe-west4',
+  },
   images: {
     remotePatterns: [
       {
