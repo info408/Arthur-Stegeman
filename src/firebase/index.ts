@@ -21,7 +21,16 @@ export function initializeFirebase() {
 
 export function getSdks(firebaseApp: FirebaseApp) {
   let appCheck: AppCheck | undefined;
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_KEY) {
+  if (
+    typeof window !== 'undefined' &&
+    process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_KEY
+  ) {
+    if (process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN) {
+      // Allow local/dev environments to bypass App Check enforcement.
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN =
+        process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN;
+    }
+
     appCheck = initializeAppCheck(firebaseApp, {
       provider: new ReCaptchaEnterpriseProvider(
         process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_KEY as string
