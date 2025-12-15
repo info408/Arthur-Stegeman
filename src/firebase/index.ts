@@ -6,6 +6,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck } from 'firebase/app-check';
 
+declare global {
+  interface Window {
+    FIREBASE_APPCHECK_DEBUG_TOKEN?: string;
+  }
+}
+
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
   if (getApps().length) {
