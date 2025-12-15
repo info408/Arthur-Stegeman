@@ -3,8 +3,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  env: {
+    FIREBASE_APP_HOSTING_REGION: 'europe-west4',
   },
   images: {
     remotePatterns: [

@@ -5,9 +5,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   // Adding location here to force the build and hosting region
   env: {
     FIREBASE_APP_HOSTING_REGION: 'europe-west4',

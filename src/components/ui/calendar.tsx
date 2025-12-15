@@ -1,17 +1,33 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from "lucide-react"
 import { DayPicker } from "react-day-picker"
+import type { CustomComponents } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
+type ChevronComponentProps = Parameters<CustomComponents["Chevron"]>[0]
+
+const orientationIconMap = {
+  left: ChevronLeft,
+  right: ChevronRight,
+  up: ChevronUp,
+  down: ChevronDown,
+} as const
+
 function Calendar({
   className,
   classNames,
+  components,
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
@@ -54,12 +70,29 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
-        ),
+        Chevron: ({
+          className,
+          orientation = "left",
+          disabled,
+          size = 16,
+          ...chevronProps
+        }: ChevronComponentProps) => {
+          const IconComponent =
+            orientationIconMap[orientation] ?? orientationIconMap.left
+
+          return (
+            <IconComponent
+              className={cn(
+                "h-4 w-4",
+                disabled && "opacity-50",
+                className
+              )}
+              size={size}
+              {...chevronProps}
+            />
+          )
+        },
+        ...(components ?? {}),
       }}
       {...props}
     />

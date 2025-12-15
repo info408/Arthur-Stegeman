@@ -4,7 +4,7 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { initializeAppCheck, ReCaptchaV3Provider, AppCheck } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck } from 'firebase/app-check';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -23,7 +23,9 @@ export function getSdks(firebaseApp: FirebaseApp) {
   let appCheck: AppCheck | undefined;
   if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_KEY) {
     appCheck = initializeAppCheck(firebaseApp, {
-      provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_KEY as string),
+      provider: new ReCaptchaEnterpriseProvider(
+        process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_KEY as string
+      ),
       isTokenAutoRefreshEnabled: true,
     });
   }

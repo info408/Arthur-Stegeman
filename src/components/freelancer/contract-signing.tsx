@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { Download, Print, Check, PartyPopper } from 'lucide-react';
+import { Check, PartyPopper } from 'lucide-react';
 import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 import { useToast } from '@/hooks/use-toast';
